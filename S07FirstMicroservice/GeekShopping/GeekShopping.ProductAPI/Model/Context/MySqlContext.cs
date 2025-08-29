@@ -11,5 +11,7 @@ namespace GeekShopping.ProductAPI.Model.Context
         protected MySqlContext()
         {
         }
+
+        public DbSet<Product> Products { get; set; }
     }
 }
