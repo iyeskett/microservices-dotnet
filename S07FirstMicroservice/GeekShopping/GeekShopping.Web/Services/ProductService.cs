@@ -47,7 +47,7 @@ namespace GeekShopping.Web.Services
         {
             var response = await _httpClient.DeleteAsync($"{BasePath}/{id}");
             if (response.IsSuccessStatusCode)
-                return await response.Content.ReadFromJsonAsync<bool>();
+                return true;
             else
                 throw new Exception("Something went wrong when calling API");
         }
