@@ -1,4 +1,5 @@
 using GeekShopping.IdentityServer.Configuration;
+using GeekShopping.IdentityServer.Initializer;
 using GeekShopping.IdentityServer.Model.Context;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<MySqlContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddIdentityServer(options =>
+
+var builderIdentityServer = builder.Services.AddIdentityServer(options =>
 {
     options.Events.RaiseErrorEvents = true;
     options.Events.RaiseInformationEvents = true;
@@ -25,8 +27,13 @@ builder.Services.AddIdentityServer(options =>
 }).AddInMemoryIdentityResources(IdentityConfiguration.IdentityResources())
     .AddInMemoryApiScopes(IdentityConfiguration.ApiScopes())
     .AddInMemoryClients(IdentityConfiguration.Clients())
-    .AddAspNetIdentity<ApplicationUser>()
-    .AddDeveloperSigningCredential();
+    .AddAspNetIdentity<ApplicationUser>();
+
+builder.Services.AddScoped<IDBInitializer, DBInitializer>();
+    builderIdentityServer.AddDeveloperSigningCredential();
+
+
+
 
 var app = builder.Build();
 
@@ -44,6 +51,11 @@ app.UseRouting();
 app.UseIdentityServer();
 
 app.UseAuthorization();
+using (var serviceScope = app.Services.CreateScope())
+{
+    var initializer = serviceScope.ServiceProvider.GetRequiredService<IDBInitializer>();
+    initializer.Initialize();
+}
 
 app.MapControllerRoute(
     name: "default",
