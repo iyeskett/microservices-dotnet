@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer(_ =>
+    .AddJwtBearer("Bearer", _ =>
     {
         _.Authority = "https://localhost:4435/";
         _.TokenValidationParameters = new TokenValidationParameters
