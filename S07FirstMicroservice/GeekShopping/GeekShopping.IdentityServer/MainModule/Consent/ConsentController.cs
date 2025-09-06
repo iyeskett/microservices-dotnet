@@ -1,14 +1,20 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using Duende.IdentityModel;
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Validation;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using IdentityModel;
 
 namespace IdentityServerHost.Quickstart.UI
 {
@@ -88,7 +94,6 @@ namespace IdentityServerHost.Quickstart.UI
         /*****************************************/
         /* helper APIs for the ConsentController */
         /*****************************************/
-
         private async Task<ProcessConsentResult> ProcessConsent(ConsentInputModel model)
         {
             var result = new ProcessConsentResult();
@@ -205,7 +210,7 @@ namespace IdentityServerHost.Quickstart.UI
                 {
                     var scopeVm = CreateScopeViewModel(parsedScope, apiScope, vm.ScopesConsented.Contains(parsedScope.RawValue) || model == null);
                     scopeVm.Resources = apiResources.Where(x => x.Scopes.Contains(parsedScope.ParsedName))
-                        .Select(x => new ResourceViewModel
+                        .Select(x=> new ResourceViewModel
                         {
                             Name = x.Name,
                             DisplayName = x.DisplayName ?? x.Name,

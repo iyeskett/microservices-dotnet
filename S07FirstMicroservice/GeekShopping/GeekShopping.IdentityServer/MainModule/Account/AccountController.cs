@@ -1,28 +1,35 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using Duende.IdentityModel;
+
+using IdentityModel;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
-using GeekShopping.IdentityServer.MainModule.Account;
-using GeekShopping.IdentityServer.Model.Context;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
+using Duende.IdentityServer.Test;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+using GeekShopping.IdentityServer.Model;
+using GeekShopping.IdentityServer.MainModule.Account;
+using System.Collections.Generic;
 using System.Security.Claims;
 
 namespace IdentityServerHost.Quickstart.UI
 {
-    /// <summary>
-    /// This sample controller implements a typical login/logout/provision workflow for local and external accounts.
-    /// The login service encapsulates the interactions with the user data store. This data store is in-memory only and cannot be used for production!
-    /// The interaction service provides a way for the UI to communicate with identityserver for validation and context retrieval
-    /// </summary>
+/// <summary>
+/// This sample controller implements a typical login/logout/provision workflow for local and external accounts.
+/// The login service encapsulates the interactions with the user data store. This data store is in-memory only and cannot be used for production!
+/// The interaction service provides a way for the UI to communicate with identityserver for validation and context retrieval
+/// </summary>
     [SecurityHeaders]
     [AllowAnonymous]
     public class AccountController : Controller
@@ -43,20 +50,21 @@ namespace IdentityServerHost.Quickstart.UI
             IAuthenticationSchemeProvider schemeProvider,
             IIdentityProviderStore identityProviderStore,
             IEventService events,
+
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             RoleManager<IdentityRole> roleManager
             )
         {
-            // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
             _interaction = interaction;
             _clientStore = clientStore;
             _schemeProvider = schemeProvider;
             _identityProviderStore = identityProviderStore;
             _events = events;
+
+            _roleManager = roleManager;
             _userManager = userManager;
             _signInManager = signInManager;
-            _roleManager = roleManager;
         }
 
         /// <summary>
@@ -92,7 +100,7 @@ namespace IdentityServerHost.Quickstart.UI
             {
                 if (context != null)
                 {
-                    // if the user cancels, send a result back into IdentityServer as if they
+                    // if the user cancels, send a result back into IdentityServer as if they 
                     // denied the consent (even if this client does not require consent).
                     // this will send back an access denied OIDC error response to the client.
                     await _interaction.DenyAuthorizationAsync(context, AuthorizationError.AccessDenied);
@@ -116,14 +124,21 @@ namespace IdentityServerHost.Quickstart.UI
 
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: false);
-                // validate username/password against in-memory store
+                var result = await _signInManager.PasswordSignInAsync(
+                    model.Username,
+                    model.Password,
+                    model.RememberLogin,
+                    lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     var user = await _userManager.FindByNameAsync(model.Username);
-                    await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
+                    await _events.RaiseAsync(
+                        new UserLoginSuccessEvent(user.UserName,
+                            user.Id,
+                            user.UserName,
+                            clientId: context?.Client.ClientId));
 
-                    // only set explicit expiration here if user chooses "remember me".
+                    // only set explicit expiration here if user chooses "remember me". 
                     // otherwise we rely upon expiration configured in cookie middleware.
                     AuthenticationProperties props = null;
                     if (AccountOptions.AllowRememberLogin && model.RememberLogin)
@@ -133,8 +148,7 @@ namespace IdentityServerHost.Quickstart.UI
                             IsPersistent = true,
                             ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
                         };
-                    }
-                    ;
+                    };
 
                     // issue authentication cookie with subject ID and username
                     var isuser = new IdentityServerUser(user.Id)
@@ -173,7 +187,7 @@ namespace IdentityServerHost.Quickstart.UI
                     }
                 }
 
-                await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials", clientId: context?.Client.ClientId));
+                await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials", clientId:context?.Client.ClientId));
                 ModelState.AddModelError(string.Empty, AccountOptions.InvalidCredentialsErrorMessage);
             }
 
@@ -182,6 +196,7 @@ namespace IdentityServerHost.Quickstart.UI
             return View(vm);
         }
 
+        
         /// <summary>
         /// Show logout page
         /// </summary>
@@ -258,6 +273,7 @@ namespace IdentityServerHost.Quickstart.UI
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
+
                 var user = new ApplicationUser
                 {
                     UserName = model.Username,
@@ -276,6 +292,7 @@ namespace IdentityServerHost.Quickstart.UI
                         {
                             Name = model.RoleName,
                             NormalizedName = model.RoleName,
+
                         };
                         await _roleManager.CreateAsync(userRole);
                     }
@@ -325,17 +342,15 @@ namespace IdentityServerHost.Quickstart.UI
                             throw new Exception("invalid return URL");
                         }
                     }
+
                 }
             }
-            List<string> roles = new List<string>();
-            roles.Add("Admin");
-            roles.Add("Client");
-            ViewBag.message = roles;
+
             // If we got this far, something failed, redisplay form
             return View(model);
         }
 
-         private async Task<RegisterViewModel> BuildRegisterViewModelAsync(string returnUrl)
+        private async Task<RegisterViewModel> BuildRegisterViewModelAsync(string returnUrl)
         {
             var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
             List<string> roles = new List<string>();
@@ -400,7 +415,6 @@ namespace IdentityServerHost.Quickstart.UI
         /*****************************************/
         /* helper APIs for the AccountController */
         /*****************************************/
-
         private async Task<LoginViewModel> BuildLoginViewModelAsync(string returnUrl)
         {
             var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
@@ -516,18 +530,17 @@ namespace IdentityServerHost.Quickstart.UI
 
             if (User?.Identity.IsAuthenticated == true)
             {
-                var idp = User.FindFirst("idp")?.Value;
-                if (idp != null && idp != IdentityServerConstants.LocalIdentityProvider)
+                var idp = User.FindFirst(JwtClaimTypes.IdentityProvider)?.Value;
+                if (idp != null && idp != Duende.IdentityServer.IdentityServerConstants.LocalIdentityProvider)
                 {
-                    var provider = await _schemeProvider.GetSchemeAsync(idp);
-
-                    var authenticationScheme = await _schemeProvider.GetSchemeAsync(idp);
-                    if (authenticationScheme != null && authenticationScheme.HandlerType != null &&
-                        typeof(IAuthenticationSignOutHandler).IsAssignableFrom(authenticationScheme.HandlerType))
+                    var providerSupportsSignout = await HttpContext.GetSchemeSupportsSignOutAsync(idp);
+                    if (providerSupportsSignout)
                     {
                         if (vm.LogoutId == null)
                         {
-                            // cria novo contexto de logout
+                            // if there's no current logout context, we need to create one
+                            // this captures necessary info from the current logged in user
+                            // before we signout and redirect away to the external IdP for signout
                             vm.LogoutId = await _interaction.CreateLogoutContextAsync();
                         }
 
