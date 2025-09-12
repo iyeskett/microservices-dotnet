@@ -1,4 +1,6 @@
-﻿namespace GeekShopping.Web.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace GeekShopping.Web.Models
 {
     public class Product
     {
@@ -13,5 +15,17 @@
         public string CategoryName { get; set; } = string.Empty;
 
         public string ImageUrl { get; set; } = string.Empty;
+
+        public string SubstringName()
+        {
+            if (Name.Length < 24) return Name;
+            return $"{Name.Substring(0, 21)} ...";
+        }
+
+        public string SubstringDescription()
+        {
+            if (Description.Length < 355) return Description;
+            return $"{Description.Substring(0, 352)} ...";
+        }
     }
 }
