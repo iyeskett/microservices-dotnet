@@ -16,6 +16,9 @@ namespace GeekShopping.Web.Models
 
         public string ImageUrl { get; set; } = string.Empty;
 
+        [Range(1, 100)]
+        public int Count { get; set; } = 1;
+
         public string SubstringName()
         {
             if (Name.Length < 24) return Name;
