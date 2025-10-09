@@ -73,8 +73,10 @@ builder.Services.AddDbContext<MySqlContext>(options => options.UseMySql(connecti
 
 builder.Services.AddAutoMapper(cfg =>
 {
-    cfg.CreateMap<ProductDTO, Product>();
-    cfg.CreateMap<Product, ProductDTO>();
+    cfg.CreateMap<ProductDTO, Product>().ReverseMap();
+    cfg.CreateMap<CartHeaderDTO, CartHeader>().ReverseMap();
+    cfg.CreateMap<CartDetailDTO, CartDetail>().ReverseMap();
+    cfg.CreateMap<CartDTO, Cart>().ReverseMap();
 });
 //builder.Services.AddScoped<IProductRepository, ProductRepository>();
 

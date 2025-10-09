@@ -1,0 +1,15 @@
+﻿namespace GeekShopping.CartAPI.Data.DTO
+{
+    public class CartDetailDTO
+    {
+        public long CartHeaderId { get; set; }
+
+        public CartHeaderDTO CartHeader { get; set; }
+
+        public long ProductId { get; set; }
+
+        public ProductDTO Product { get; set; }
+
+        public int Count { get; set; }
+    }
+}
