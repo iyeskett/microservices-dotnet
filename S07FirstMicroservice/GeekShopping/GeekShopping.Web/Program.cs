@@ -9,6 +9,11 @@ builder.Services.AddHttpClient<IProductService, ProductService>(_ =>
 {
     _.BaseAddress = new Uri(builder.Configuration["ServiceURLs:ProductAPI"]);
 });
+
+builder.Services.AddHttpClient<ICartService, CartService>(_ =>
+{
+    _.BaseAddress = new Uri(builder.Configuration["ServiceURLs:CartAPI"]);
+});
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddAuthentication(_ =>
