@@ -1,6 +1,7 @@
 using GeekShopping.CartAPI.Data.DTO;
 using GeekShopping.CartAPI.Model;
 using GeekShopping.CartAPI.Model.Context;
+using GeekShopping.CartAPI.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -78,7 +79,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.CreateMap<CartDetailDTO, CartDetail>().ReverseMap();
     cfg.CreateMap<CartDTO, Cart>().ReverseMap();
 });
-//builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
 
 var app = builder.Build();
 
