@@ -11,11 +11,13 @@ namespace GeekShopping.Web.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private IProductService _productService;
+        private ICartService _cartService;
 
-        public HomeController(ILogger<HomeController> logger, IProductService productService)
+        public HomeController(ILogger<HomeController> logger, IProductService productService, ICartService cartService)
         {
             _logger = logger;
             _productService = productService;
+            _cartService = cartService;
         }
 
         public async Task<IActionResult> IndexAsync()
@@ -29,6 +31,43 @@ namespace GeekShopping.Web.Controllers
         {
             var accessToken = await HttpContext.GetTokenAsync("access_token");
             var product = await _productService.FindProductById(id, accessToken);
+            return View(product);
+        }
+
+        [HttpPost]
+        [ActionName("Details")]
+        [Authorize]
+        public async Task<IActionResult> DetailsPost(Product product)
+        {
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+
+            Cart cart = new()
+            {
+                CartHeader = new()
+                {
+                    UserId = User.Claims.Where(_ => _.Type == "sub")?.FirstOrDefault()?.Value
+                }
+            };
+
+            CartDetail cartDetail = new()
+            {
+                Count = product.Count,
+                ProductId = product.Id,
+                Product = await _productService.FindProductById(product.Id, accessToken)
+            };
+
+            List<CartDetail> cartDetailsList = new()
+            {
+                cartDetail
+            };
+
+            cart.CartDetails = cartDetailsList;
+
+            var response = await _cartService.AddItemToCart(cart, accessToken);
+            if (response != null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
             return View(product);
         }
 

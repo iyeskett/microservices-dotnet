@@ -8,6 +8,6 @@
 
         public decimal DiscountAmount { get; set; }
 
-        public List<CartDetail> CartDetails { get; set; } = new List<CartDetail>();
+        public List<CartDetail>? CartDetails { get; set; }
     }
 }

@@ -129,6 +129,8 @@ namespace GeekShopping.CartAPI.Repository
                     cart.CartDetails.FirstOrDefault().CartHeaderId = cartDetail.CartHeaderId;
 
                     _context.CartDetails.Update(cart.CartDetails.FirstOrDefault());
+
+                    await _context.SaveChangesAsync();
                 }
             }
 
