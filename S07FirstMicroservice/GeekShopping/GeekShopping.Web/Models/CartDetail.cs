@@ -2,6 +2,8 @@
 {
     public class CartDetail
     {
+        public long Id { get; set; }
+
         public long CartHeaderId { get; set; }
 
         public CartHeader? CartHeader { get; set; }

@@ -75,7 +75,7 @@ namespace GeekShopping.Web.Controllers
         public async Task<IActionResult> LoginAsync()
         {
             var accessToken = await HttpContext.GetTokenAsync("access_token");
-            return RedirectToAction(nameof(IndexAsync));
+            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Logout()
