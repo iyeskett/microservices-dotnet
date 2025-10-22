@@ -4,17 +4,17 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:56405",
-      "sslPort": 4445
+      "applicationUrl": "http://localhost:46544",
+      "sslPort": 4450
     }
   },
   "profiles": {
-    "GeekShopping.CartAPI": {
+    "GeekShopping.CouponAPI": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "https://localhost:4445;http://localhost:4446",
+      "applicationUrl": "https://localhost:4450;http://localhost:4451",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
