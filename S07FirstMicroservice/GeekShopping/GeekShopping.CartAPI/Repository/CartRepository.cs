@@ -50,7 +50,10 @@ namespace GeekShopping.CartAPI.Repository
                 .Where(_ => _.CartHeaderId == cart.CartHeader.Id)
                 .Include(_ => _.Product);
 
-            return _mapper.Map<CartDTO>(cart);
+            if(cart.CartHeader != null &&  cart.CartDetails != null)
+                return _mapper.Map<CartDTO>(cart);
+
+            return null;
         }
 
         public async Task<bool> RemoveCoupon(string userId)
