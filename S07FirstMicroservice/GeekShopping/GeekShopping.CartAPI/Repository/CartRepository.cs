@@ -69,7 +69,7 @@ namespace GeekShopping.CartAPI.Repository
         {
             Cart cart = new()
             {
-                CartHeader = await _context.CartHeaders.FirstOrDefaultAsync(_ => _.UserId == userId),
+                CartHeader = await _context.CartHeaders.FirstOrDefaultAsync(_ => _.UserId == userId) ?? new(),
             };
             cart.CartDetails = _context.CartDetails
                 .Where(_ => _.CartHeaderId == cart.CartHeader.Id)
