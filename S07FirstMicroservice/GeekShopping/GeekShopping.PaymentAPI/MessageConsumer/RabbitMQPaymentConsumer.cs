@@ -80,7 +80,7 @@ namespace GeekShopping.PaymentAPI.MessageConsumer
 
             try
             {
-                _rabbitMQMessageSender.SendMessageAsync(updatePaymentResultMessage, "orderpaymentresultqueue");
+                _rabbitMQMessageSender.SendMessageAsync(updatePaymentResultMessage);
             }
             catch (Exception)
             {

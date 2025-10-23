@@ -74,6 +74,7 @@ namespace GeekShopping.Web.Services
 
         public async Task<object> Checkout(CartHeader cartHeader, string token)
         {
+            if (cartHeader.CouponCode == null) cartHeader.CouponCode = string.Empty;
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var response = await _httpClient.PostAsJsonAsync($"{BasePath}/checkout/", cartHeader);
             if (response.IsSuccessStatusCode)

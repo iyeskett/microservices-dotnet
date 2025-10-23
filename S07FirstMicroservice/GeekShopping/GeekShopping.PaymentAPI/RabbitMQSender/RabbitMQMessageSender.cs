@@ -12,6 +12,7 @@ namespace GeekShopping.PaymentAPI.RabbitMQSender
         private readonly string _username;
         private readonly string _password;
         private IConnection _connection;
+        private const string ExchangeName = "FanoutPaymentUpdateExchange";
 
         public RabbitMQMessageSender()
         {
@@ -20,16 +21,16 @@ namespace GeekShopping.PaymentAPI.RabbitMQSender
             _password = "guest";
         }
 
-        public async void SendMessageAsync(BaseMessage baseMessage, string queueName)
+        public async void SendMessageAsync(BaseMessage baseMessage)
         {
             if (await ConnectionExistsAsync())
             {
                 using var channel = await _connection.CreateChannelAsync();
-                await channel.QueueDeclareAsync(queue: queueName, false, false, false, arguments: null);
+                await channel.ExchangeDeclareAsync(ExchangeName, ExchangeType.Fanout, durable: false);
                 byte[] body = GetMessageAsByteArray(baseMessage);
                 await channel.BasicPublishAsync(
-                    exchange: "",
-                    routingKey: queueName,
+                    exchange: ExchangeName,
+                    routingKey: "",
                     body: body);
             }
         }
@@ -44,6 +45,13 @@ namespace GeekShopping.PaymentAPI.RabbitMQSender
             var body = Encoding.UTF8.GetBytes(json);
 
             return body;
+        }
+
+        private async Task<bool> ConnectionExistsAsync()
+        {
+            if (_connection != null) return true;
+            await CreateConnectionAsync();
+            return _connection != null;
         }
 
         private async Task CreateConnectionAsync()
@@ -63,13 +71,6 @@ namespace GeekShopping.PaymentAPI.RabbitMQSender
             {
                 throw;
             }
-        }
-
-        private async Task<bool> ConnectionExistsAsync()
-        {
-            if (_connection != null) return true;
-            await CreateConnectionAsync();
-            return _connection != null;
         }
     }
 }
