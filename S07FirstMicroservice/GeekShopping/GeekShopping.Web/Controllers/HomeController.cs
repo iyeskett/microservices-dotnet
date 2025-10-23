@@ -12,12 +12,14 @@ namespace GeekShopping.Web.Controllers
         private readonly ILogger<HomeController> _logger;
         private IProductService _productService;
         private ICartService _cartService;
+        private ICouponService _couponService;
 
-        public HomeController(ILogger<HomeController> logger, IProductService productService, ICartService cartService)
+        public HomeController(ILogger<HomeController> logger, IProductService productService, ICartService cartService, ICouponService couponService)
         {
             _logger = logger;
             _productService = productService;
             _cartService = cartService;
+            _couponService = couponService;
         }
 
         public async Task<IActionResult> IndexAsync()

@@ -60,7 +60,7 @@ namespace GeekShopping.CartAPI.Controllers
             return Ok(added);
         }
 
-        [HttpPost("remove-coupon/{userId}")]
+        [HttpDelete("remove-coupon/{userId}")]
         public async Task<ActionResult<CartDTO>> ApplyCoupon(string userid)
         {
             var removed = await _repository.RemoveCoupon(userid);
