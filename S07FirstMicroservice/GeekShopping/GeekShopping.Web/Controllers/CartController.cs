@@ -34,6 +34,26 @@ namespace GeekShopping.Web.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> Checkout(Cart cart)
+        {
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+
+            var response = await _cartService.Checkout(cart.CartHeader, accessToken);
+
+            if (response != null)
+            {
+                return RedirectToAction(nameof(Confirmation));
+            }
+            return View(cart);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Confirmation()
+        {
+            return View();
+        }
+
+        [HttpPost]
         [ActionName("ApplyCoupon")]
         public async Task<IActionResult> ApplyCoupon(Cart cart)
         {
