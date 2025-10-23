@@ -1,13 +1,11 @@
 ﻿using GeekShopping.OrderAPI.Message;
 using GeekShopping.OrderAPI.Model;
+using GeekShopping.OrderAPI.RabbitMQSender;
 using GeekShopping.OrderAPI.Repository;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Channels;
 
 namespace GeekShopping.OrderAPI.MessageConsumer
 {
@@ -16,10 +14,12 @@ namespace GeekShopping.OrderAPI.MessageConsumer
         private readonly IServiceProvider _serviceProvider;
         private IConnection _connection;
         private IChannel _channel;
+        private IRabbitMQMessageSender _rabbitMQMessageSender;
 
-        public RabbitMQCheckoutConsumer(IServiceProvider serviceProvider, IConfiguration configuration)
+        public RabbitMQCheckoutConsumer(IServiceProvider serviceProvider, IConfiguration configuration, IRabbitMQMessageSender rabbitMQMessageSender)
         {
             _serviceProvider = serviceProvider;
+            _rabbitMQMessageSender = rabbitMQMessageSender;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -60,7 +60,6 @@ namespace GeekShopping.OrderAPI.MessageConsumer
                    Console.WriteLine(e.Message);
                    throw;
                }
-              
            };
             await _channel.BasicConsumeAsync(queue: "checkoutqueue",
                                   autoAck: false,
@@ -104,6 +103,26 @@ namespace GeekShopping.OrderAPI.MessageConsumer
             }
 
             await repository.AddOrder(orderHeader);
+
+            PaymentDTO paymentDTO = new()
+            {
+                Name = $"{orderHeader.FirstName} {orderHeader.LastName}",
+                CardNumber = orderHeader.CardNumber,
+                CVV = orderHeader.CVV,
+                ExpireMonthYear = orderHeader.ExpiryMonthYear,
+                OrderId = orderHeader.Id,
+                PurchaseAmount = orderHeader.PurchaseAmount,
+                Email = orderHeader.Email
+            };
+
+            try
+            {
+                _rabbitMQMessageSender.SendMessageAsync(paymentDTO, "orderpaymentprocessqueue");
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }
