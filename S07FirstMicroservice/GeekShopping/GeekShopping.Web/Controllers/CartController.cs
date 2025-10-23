@@ -47,8 +47,7 @@ namespace GeekShopping.Web.Controllers
             return View(cart);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Confirmation()
+        public IActionResult Confirmation()
         {
             return View();
         }

@@ -1,5 +1,6 @@
 using GeekShopping.CartAPI.Data.DTO;
 using GeekShopping.CartAPI.Messages;
+using GeekShopping.CartAPI.RabbitMQSender;
 using GeekShopping.CartAPI.Repository;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,10 +11,12 @@ namespace GeekShopping.CartAPI.Controllers
     public class CartController : ControllerBase
     {
         private ICartRepository _repository;
+        private IRabbitMQMessageSender _rabbitMQMessageSender;
 
-        public CartController(ICartRepository repository)
+        public CartController(ICartRepository repository, IRabbitMQMessageSender rabbitMQMessageSender)
         {
             _repository = repository;
+            _rabbitMQMessageSender = rabbitMQMessageSender;
         }
 
         [HttpGet("find-cart/{id}")]
@@ -73,6 +76,8 @@ namespace GeekShopping.CartAPI.Controllers
         [HttpPost("checkout")]
         public async Task<ActionResult<CheckoutDTO>> Checkout(CheckoutDTO checkoutDTO)
         {
+            if (checkoutDTO?.UserId == null) return BadRequest();
+
             var cart = await _repository.FindCartByUserId(checkoutDTO.UserId);
 
             if (cart == null) return NotFound();
@@ -80,7 +85,7 @@ namespace GeekShopping.CartAPI.Controllers
             checkoutDTO.CartDetailDTOs = cart.CartDetails;
             checkoutDTO.DateTime = DateTime.Now;
 
-            // Task  RabbitMQ
+            _rabbitMQMessageSender.SendMessageAsync(checkoutDTO, "checkoutqueue");
 
             return Ok(checkoutDTO);
         }

@@ -1,6 +1,7 @@
 using GeekShopping.CartAPI.Data.DTO;
 using GeekShopping.CartAPI.Model;
 using GeekShopping.CartAPI.Model.Context;
+using GeekShopping.CartAPI.RabbitMQSender;
 using GeekShopping.CartAPI.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -80,6 +81,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.CreateMap<CartDTO, Cart>().ReverseMap();
 });
 builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<IRabbitMQMessageSender, RabbitMQMessageSender>();
 
 var app = builder.Build();
 
