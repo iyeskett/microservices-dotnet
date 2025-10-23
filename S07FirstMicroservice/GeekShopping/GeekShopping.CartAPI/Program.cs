@@ -81,7 +81,13 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.CreateMap<CartDTO, Cart>().ReverseMap();
 });
 builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<ICouponRepository, CouponRepository>();
 builder.Services.AddScoped<IRabbitMQMessageSender, RabbitMQMessageSender>();
+
+builder.Services.AddHttpClient<ICouponRepository, CouponRepository>(_ =>
+{
+    _.BaseAddress = new Uri(builder.Configuration["ServiceURLs:CouponAPI"]);
+});
 
 var app = builder.Build();
 
