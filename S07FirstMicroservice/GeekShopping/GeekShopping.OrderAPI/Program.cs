@@ -1,4 +1,5 @@
 using GeekShopping.OrderAPI.Model.Context;
+using GeekShopping.OrderAPI.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -68,8 +69,10 @@ builder.Services.AddSwaggerGen(_ =>
 
 var connection = builder.Configuration["MySQLConnection:MySQLConnectionString"];
 builder.Services.AddDbContext<MySqlContext>(options => options.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 37))));
+var optionsBuilder = new DbContextOptionsBuilder<MySqlContext>();
+optionsBuilder.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 37)));
 
-//builder.Services.AddScoped<IRabbitMQMessageSender, RabbitMQMessageSender>();
+builder.Services.AddSingleton(new OrderRepository(optionsBuilder.Options));
 
 var app = builder.Build();
 
