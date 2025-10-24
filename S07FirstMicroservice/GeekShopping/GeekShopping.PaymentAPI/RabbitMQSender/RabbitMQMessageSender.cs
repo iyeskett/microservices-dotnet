@@ -12,7 +12,9 @@ namespace GeekShopping.PaymentAPI.RabbitMQSender
         private readonly string _username;
         private readonly string _password;
         private IConnection _connection;
-        private const string ExchangeName = "FanoutPaymentUpdateExchange";
+        private const string ExchangeName = "DirectPaymentUpdateExchange";
+        private const string PaymentEmailUpdateQueueName = "PaymentEmailUpdateQueueName";
+        private const string PaymentOrderUpdateQueueName = "PaymentOrderUpdateQueueName";
 
         public RabbitMQMessageSender()
         {
@@ -26,11 +28,29 @@ namespace GeekShopping.PaymentAPI.RabbitMQSender
             if (await ConnectionExistsAsync())
             {
                 using var channel = await _connection.CreateChannelAsync();
-                await channel.ExchangeDeclareAsync(ExchangeName, ExchangeType.Fanout, durable: false);
+                await channel.ExchangeDeclareAsync(ExchangeName, ExchangeType.Direct, durable: false);
+                await channel.QueueDeclareAsync(queue: PaymentEmailUpdateQueueName,
+                    durable: false,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null);
+                await channel.QueueDeclareAsync(queue: PaymentOrderUpdateQueueName,
+                    durable: false,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null);
+
+                await channel.QueueBindAsync(PaymentEmailUpdateQueueName, ExchangeName, "PaymentEmail");
+                await channel.QueueBindAsync(PaymentOrderUpdateQueueName, ExchangeName, "PaymentOrder");
+
                 byte[] body = GetMessageAsByteArray(baseMessage);
                 await channel.BasicPublishAsync(
                     exchange: ExchangeName,
-                    routingKey: "",
+                    routingKey: "PaymentEmail",
+                    body: body);
+                await channel.BasicPublishAsync(
+                    exchange: ExchangeName,
+                    routingKey: "PaymentOrder",
                     body: body);
             }
         }
